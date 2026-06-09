@@ -1,0 +1,211 @@
+{
+  "info": {
+    "_postman_id": "8a06e6bf-014c-4a37-b892-d35b91b8d2b2",
+    "name": "OSTA Complaint Management System API",
+    "description": "Comprehensive Postman API collection for verifying authentication, role-based workflows, evidence file uploading, and administrative security logs in the Oromia Complaint Management System.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Citizen Self-Registration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"citizen.abebe@example.com\",\n  \"password\": \"Password123!\",\n  \"fullName\": \"Abebe Kebede\",\n  \"gender\": \"Male\",\n  \"phone\": \"+251912345678\",\n  \"region\": \"Oromia\",\n  \"city\": \"Adama\",\n  \"woreda\": \"Woreda 01\",\n  \"kebele\": \"Kebele 02\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "User Login (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseData = pm.response.json();",
+                  "if (responseData.success) {",
+                  "    pm.environment.set(\"admin_token\", responseData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@oromia.gov.et\",\n  \"password\": \"AdminPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "User Login (Citizen)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseData = pm.response.json();",
+                  "if (responseData.success) {",
+                  "    pm.environment.set(\"citizen_token\", responseData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"citizen.abebe@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Complaint Submission & Tracking",
+      "item": [
+        {
+          "name": "Submit Complaint (with Evidence)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{citizen_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "category", "value": "environmental", "type": "text" },
+                { "key": "description", "value": "Industrial carbon gas emission from the localized refinery branch.", "type": "text" },
+                { "key": "dateOfOccurrence", "value": "2026-05-24", "type": "text" },
+                { "key": "locationAddress", "value": "Adama Refinery Sector", "type": "text" },
+                { "key": "priority", "value": "high", "type": "text" },
+                { "key": "confidentiality", "value": "public", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/complaints/submit",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "complaints", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Live Track Reference Number",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/complaints/track/CMS-2026-00001",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "complaints", "track", "CMS-2026-00001"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Admin & Audit Logs",
+      "item": [
+        {
+          "name": "Create Directorate Department",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Environmental Quality Assurance Directorate\",\n  \"region\": \"Oromia\",\n  \"description\": \"Monitors air quality indices and industrial smoke emission filters.\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/admin/departments/create",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "admin", "departments", "create"]
+            }
+          }
+        },
+        {
+          "name": "Fetch Structural Audit Trails",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/admin/audit-logs",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "admin", "audit-logs"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
